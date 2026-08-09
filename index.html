@@ -559,6 +559,11 @@
 
   .summary-page .formula-box{background:#E7D4AD;border-left:4px solid var(--amber-deep);padding:12px 15px;margin:12px 0;border-radius:5px;font-family:'IBM Plex Mono',monospace;white-space:pre-wrap;}
   .summary-page .takeaway-box{background:rgba(138,154,91,.12);border:1px solid rgba(138,154,91,.45);padding:12px 15px;margin:12px 0;border-radius:7px;}
+  .summary-page .formula-box.formula-highlight{
+    outline:2px solid var(--amber);
+    box-shadow:0 0 0 4px rgba(201,144,61,.16);
+    background:#F0D89F;
+  }
   .summary-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
   .summary-action-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;background:transparent;border:1px solid #4E3A26;color:var(--cream-soft);padding:7px 12px;border-radius:16px;cursor:pointer;}
   .summary-action-btn:hover{border-color:var(--amber);color:var(--amber);}
@@ -684,6 +689,8 @@
 
     <div class="tab-panel active" id="tabSummary" role="tabpanel">
       <div class="summary-toolbar">
+        <button class="download-btn" id="copySummaryBtn">📋 Copy summary</button>
+        <button class="download-btn" id="toggleFormulaBtn">∑ Highlight formulas</button>
         <button class="download-btn" id="printSummaryBtn">🖨 Print summary</button>
       </div>
       <div class="page-stack">
@@ -1192,18 +1199,25 @@ let clean = text.trim();
 
   const copySummaryBtn = document.getElementById('copySummaryBtn');
   const toggleFormulaBtn = document.getElementById('toggleFormulaBtn');
-  copySummaryBtn.addEventListener('click', async ()=>{
-    try{
-      await navigator.clipboard.writeText(lastSummaryMd || '');
-      copySummaryBtn.textContent = '✓ Copied';
-      setTimeout(()=>copySummaryBtn.textContent='📋 Copy summary', 1400);
-    }catch(e){ copySummaryBtn.textContent='Copy unavailable'; setTimeout(()=>copySummaryBtn.textContent='📋 Copy summary',1400); }
-  });
-  toggleFormulaBtn.addEventListener('click', ()=>{
-    const boxes = summaryContent.querySelectorAll('.formula-box');
-    boxes.forEach(b=>b.classList.toggle('formula-highlight'));
-    toggleFormulaBtn.textContent = boxes.length && boxes[0].classList.contains('formula-highlight') ? '∑ Normal formulas' : '∑ Highlight formulas';
-  });
+  if(copySummaryBtn){
+    copySummaryBtn.addEventListener('click', async ()=>{
+      if(!lastSummaryMd){ copySummaryBtn.textContent='Generate a summary first'; setTimeout(()=>copySummaryBtn.textContent='📋 Copy summary',1400); return; }
+      try{
+        await navigator.clipboard.writeText(lastSummaryMd);
+        copySummaryBtn.textContent = '✓ Copied';
+        setTimeout(()=>copySummaryBtn.textContent='📋 Copy summary', 1400);
+      }catch(e){ copySummaryBtn.textContent='Copy unavailable'; setTimeout(()=>copySummaryBtn.textContent='📋 Copy summary',1400); }
+    });
+  }
+  if(toggleFormulaBtn){
+    toggleFormulaBtn.addEventListener('click', ()=>{
+      const boxes = summaryContent.querySelectorAll('.formula-box');
+      if(!boxes.length){ toggleFormulaBtn.textContent='No formulas found'; setTimeout(()=>toggleFormulaBtn.textContent='∑ Highlight formulas',1400); return; }
+      boxes.forEach(b=>b.classList.toggle('formula-highlight'));
+      const on = boxes[0].classList.contains('formula-highlight');
+      toggleFormulaBtn.textContent = on ? '∑ Normal formulas' : '∑ Highlight formulas';
+    });
+  }
 
   printSummaryBtn.addEventListener('click', ()=>{
     const w = window.open('', '_blank');
@@ -1832,10 +1846,10 @@ jsonMode: true
       if(!response.ok) throw new Error('The request failed (status ' + response.status + ').');
 
       const data = await response.json();
-      const textBlock = (data.content || []).find(b => b.type === 'text');
-      if(!textBlock) throw new Error('No response came back. Try again.');
+      const text = data.choices?.[0]?.message?.content;
+      if(!text) throw new Error('No response came back from Groq. Try again.');
 
-      let clean = textBlock.text.trim();
+      let clean = text.trim();
       clean = clean.replace(/^```json\s*/i, '').replace(/^```\s*/,'').replace(/```\s*$/,'');
 
       let parsed;
