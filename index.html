@@ -1103,7 +1103,13 @@ let clean = text.trim();
   }
   tabSummaryBtn.addEventListener('click', ()=>activateTab('summary'));
   tabCardsBtn.addEventListener('click', ()=>activateTab('cards'));
-  tabQuizBtn.addEventListener('click', ()=>activateTab('quiz'));
+  tabQuizBtn.addEventListener('click', ()=>{
+  activateTab('quiz');
+
+  if (quiz.length > 0 && !qAnswered) {
+    startTimer();
+  }
+});
 
   // ---------- Flashcard deck ----------
   let deck = [];
@@ -2087,7 +2093,7 @@ jsonMode: true
 
     results.style.display = lastSummaryMd ? 'block' : 'none';
     activateView('study');
-    startSessionTimer();
+   
   }
 
 })();
