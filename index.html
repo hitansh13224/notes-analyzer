@@ -528,6 +528,13 @@
   .study-images-loading{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-text-soft);padding:6px 0;}
   @media(max-width:600px){.study-image-card img{aspect-ratio:16/9;height:auto;}}
 
+
+  .summary-page .formula-box{background:#E7D4AD;border-left:4px solid var(--amber-deep);padding:12px 15px;margin:12px 0;border-radius:5px;font-family:'IBM Plex Mono',monospace;white-space:pre-wrap;}
+  .summary-page .takeaway-box{background:rgba(138,154,91,.12);border:1px solid rgba(138,154,91,.45);padding:12px 15px;margin:12px 0;border-radius:7px;}
+  .summary-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .summary-action-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;background:transparent;border:1px solid #4E3A26;color:var(--cream-soft);padding:7px 12px;border-radius:16px;cursor:pointer;}
+  .summary-action-btn:hover{border-color:var(--amber);color:var(--amber);}
+
   @media (prefers-reduced-motion: reduce){
     .flip-card-inner{transition:none;}
     .mastery-fill{transition:none;}
@@ -584,6 +591,7 @@
             <button type="button" data-len="short">Short</button>
             <button type="button" data-len="medium" class="active">Medium</button>
             <button type="button" data-len="detailed">Detailed</button>
+            <button type="button" data-len="lengthy">Lengthy</button>
           </div>
         </div>
         <div class="field">
@@ -859,6 +867,16 @@
     let inList = false;
     for(const raw of lines){
       const line = raw.trim();
+      if(line === '## Important Formulas' || line === '### Important Formulas'){
+        if(inList){ html += '</ul>'; inList=false; }
+        html += '<h2 class="formula-heading">∑ Important Formulas</h2>';
+        continue;
+      }
+      if(line === '## Key Takeaways' || line === '### Key Takeaways'){
+        if(inList){ html += '</ul>'; inList=false; }
+        html += '<h2 class="takeaway-heading">✓ Key Takeaways</h2>';
+        continue;
+      }
       if(line === ''){ if(inList){ html += '</ul>'; inList=false; } continue; }
       if(line.startsWith('## ')){
         if(inList){ html+='</ul>'; inList=false; }
@@ -875,6 +893,8 @@
       }
     }
     if(inList) html += '</ul>';
+    html = html.replace(/<p>([^<]*(?:=|²|³|√|π|\bTSA\b|\bCSA\b|\bLSA\b|\barea\b|\bvolume\b)[^<]*)<\/p>/gi, '<div class="formula-box">$1</div>');
+    html = html.replace(/<ul>([\s\S]*?)<\/ul>/g, (m, body) => /formula|equation|\bTSA\b|\bCSA\b|\bLSA\b/i.test(body) ? '<div class="formula-box"><ul>'+body+'</ul></div>' : m);
     return html;
   }
 
@@ -938,7 +958,8 @@
       + '"flashcards": [{"front": "a short question or term", "back": "a concise, accurate answer"}], '
       + '"quiz": [{"question": "a multiple choice question", "options": ["opt A","opt B","opt C","opt D"], "correctIndex": 0, "explanation": "one short sentence on why that answer is correct"}]}. '
       + '"imageQueries": [{"section": "exact ## section heading from the summary", "query": "2-6 word Wikimedia Commons image search query"}]}. Include 1 image query for each important ## summary section, up to 6 total. The section value must exactly match the corresponding ## heading text without the ##. '
-      + 'Generate exactly ' + n + ' flashcards and exactly ' + q + ' quiz questions, each covering important facts, definitions, and concepts in the notes. '
+      + 'For every summary length, actively look for important formulas, equations, rules, laws, symbols, units, ratios, dates, or step-by-step procedures present in the notes. Put them in a clearly labeled markdown section such as ## Important Formulas when applicable. Never invent a formula that is not supported by the notes. For formulas, preserve notation and include a one-line meaning of each variable when the notes support it. Also include a short ## Key Takeaways section when useful. ' +
+      'Generate exactly ' + n + ' flashcards and exactly ' + q + ' quiz questions, each covering important facts, definitions, and concepts in the notes. '
       + 'Quiz difficulty should be ' + diffWord + '. '
       + 'Quiz questions must have exactly 4 options each, with only one correct, and correctIndex must be the 0-based index of the correct option. '
       + 'Keep flashcard fronts short (a question or a term) and backs concise (1-2 sentences max). '
@@ -957,7 +978,8 @@
     const n = cardCount.value;
     const q = quizCount.value;
     const lenWord = summaryLength === 'short' ? 'very short (3-5 bullet points total)'
-      : summaryLength === 'detailed' ? 'more detailed and informative (several sections with headers and sub-bullets; explain the important ideas in a little more depth, include key terms, causes/effects or steps when supported by the notes, and brief examples when they are present in the notes; aim for roughly 2-4 useful bullets per subsection without adding information that is not in the notes)'
+      : summaryLength === 'detailed' ? 'detailed (several sections with headers, sub-bullets, key explanations, examples, and important formulas when present)'
+      : summaryLength === 'lengthy' ? 'lengthy and thorough (many well-organized sections, deeper explanations, examples, key terms, important formulas, and exam-relevant details)'
       : 'medium length (a few short sections with headers and bullets)';
     const diffWord = quizDifficulty === 'easy'
       ? 'easy: direct recall and definitions, with clearly wrong distractors'
@@ -1095,6 +1117,21 @@ let clean = text.trim();
       }catch(err){ const loading=wrap.querySelector('.study-images-loading'); if(loading) loading.textContent='Images could not be loaded right now.'; }
     }
   }
+
+  const copySummaryBtn = document.getElementById('copySummaryBtn');
+  const toggleFormulaBtn = document.getElementById('toggleFormulaBtn');
+  copySummaryBtn.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(lastSummaryMd || '');
+      copySummaryBtn.textContent = '✓ Copied';
+      setTimeout(()=>copySummaryBtn.textContent='📋 Copy summary', 1400);
+    }catch(e){ copySummaryBtn.textContent='Copy unavailable'; setTimeout(()=>copySummaryBtn.textContent='📋 Copy summary',1400); }
+  });
+  toggleFormulaBtn.addEventListener('click', ()=>{
+    const boxes = summaryContent.querySelectorAll('.formula-box');
+    boxes.forEach(b=>b.classList.toggle('formula-highlight'));
+    toggleFormulaBtn.textContent = boxes.length && boxes[0].classList.contains('formula-highlight') ? '∑ Normal formulas' : '∑ Highlight formulas';
+  });
 
   printSummaryBtn.addEventListener('click', ()=>{
     const w = window.open('', '_blank');
