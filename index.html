@@ -498,6 +498,13 @@
   .focus-goal-fill{height:100%;width:0;background:var(--sage);transition:width .25s;}
   .focus-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
   .focus-status{font:11px 'IBM Plex Mono',monospace;text-align:center;color:var(--ink-text-soft);min-height:17px;margin-top:8px;}
+  .quick-timer{margin-top:16px;border:1px solid var(--paper-line);border-radius:10px;padding:14px;background:var(--paper-2);}
+  .quick-timer-head{display:flex;justify-content:space-between;align-items:center;font:600 12px 'IBM Plex Mono',monospace;color:var(--ink-text);}
+  .quick-timer-head small{font-weight:400;color:var(--ink-text-soft);}
+  .quick-timer-display{font:600 34px 'IBM Plex Mono',monospace;text-align:center;color:var(--rule-red);margin:8px 0;}
+  .quick-timer-inputs{display:flex;align-items:center;justify-content:center;gap:6px;font:11px 'IBM Plex Mono',monospace;color:var(--ink-text-soft);}
+  .quick-timer-inputs input{width:62px;border:1px solid var(--paper-line);background:var(--paper);color:var(--ink-text);border-radius:6px;padding:7px;text-align:center;font:500 12px 'IBM Plex Mono',monospace;}
+  .quick-timer .focus-actions{margin-top:10px;}
 
 
   /* ---- timetable analyzer ---- */
@@ -819,6 +826,21 @@
             <div class="focus-progress"><div class="focus-progress-fill" id="focusProgressFill"></div></div>
             <div class="focus-status" id="focusStatus">Ready when you are.</div>
             <div class="focus-actions"><button class="tool-btn primary" id="focusStartBtn">▶ Start</button><button class="tool-btn" id="focusPauseBtn">Ⅱ Pause</button><button class="tool-btn" id="focusResetBtn">↺ Reset</button><button class="tool-btn" id="focusSkipBtn">⏭ Skip</button><button class="tool-btn" id="focusFullscreenBtn">⛶ Fullscreen</button></div>
+            <div class="quick-timer">
+              <div class="quick-timer-head"><span>⏱ Quick Timer</span><small id="quickTimerStatus">Ready</small></div>
+              <div class="quick-timer-display" id="quickTimerDisplay">05:00</div>
+              <div class="quick-timer-inputs">
+                <input type="number" id="quickTimerMinutes" min="0" max="180" value="5" aria-label="Timer minutes">
+                <span>min</span>
+                <input type="number" id="quickTimerSeconds" min="0" max="59" value="0" aria-label="Timer seconds">
+                <span>sec</span>
+              </div>
+              <div class="focus-actions">
+                <button class="tool-btn primary" id="quickTimerStartBtn">▶ Start Timer</button>
+                <button class="tool-btn" id="quickTimerPauseBtn">Ⅱ Pause</button>
+                <button class="tool-btn" id="quickTimerResetBtn">↺ Reset</button>
+              </div>
+            </div>
             <div class="focus-settings">
               <div class="focus-setting"><label><input type="checkbox" id="focusAutoBreak" checked> Auto-start break</label></div>
               <div class="focus-setting"><label><input type="checkbox" id="focusAutoFocus"> Auto-start next focus</label></div>
@@ -2170,6 +2192,52 @@ jsonMode: true
   document.getElementById('focusGoalInput').addEventListener('change',focusStats);
   document.getElementById('focusFullscreenBtn').addEventListener('click',async()=>{ try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); }catch(e){ focusStatus.textContent='Fullscreen is not available in this browser.'; } });
   focusStats(); renderFocusHistory(); renderFocus();
+
+  // Standalone quick countdown timer
+  const quickTimerDisplay=document.getElementById('quickTimerDisplay');
+  const quickTimerMinutes=document.getElementById('quickTimerMinutes');
+  const quickTimerSeconds=document.getElementById('quickTimerSeconds');
+  const quickTimerStatus=document.getElementById('quickTimerStatus');
+  let quickTimerTotal=(Number(quickTimerMinutes.value)||5)*60+(Number(quickTimerSeconds.value)||0);
+  let quickTimerRemaining=quickTimerTotal, quickTimerInterval=null;
+  function renderQuickTimer(){
+    const m=Math.floor(quickTimerRemaining/60), sec=quickTimerRemaining%60;
+    quickTimerDisplay.textContent=m+':'+String(sec).padStart(2,'0');
+    document.title=quickTimerInterval ? '⏱ '+quickTimerDisplay.textContent+' — Index' : document.title;
+  }
+  function setQuickTimerFromInputs(){
+    if(quickTimerInterval)return;
+    const m=Math.min(180,Math.max(0,Number(quickTimerMinutes.value)||0));
+    const sec=Math.min(59,Math.max(0,Number(quickTimerSeconds.value)||0));
+    quickTimerMinutes.value=m; quickTimerSeconds.value=sec;
+    quickTimerTotal=m*60+sec; quickTimerRemaining=quickTimerTotal;
+    quickTimerStatus.textContent=quickTimerTotal?'Ready':'Set a time';
+    renderQuickTimer();
+  }
+  function startQuickTimer(){
+    if(quickTimerInterval || quickTimerRemaining<=0)return;
+    quickTimerStatus.textContent='Running';
+    quickTimerInterval=setInterval(()=>{
+      quickTimerRemaining--; renderQuickTimer();
+      if(quickTimerRemaining<=0){
+        clearInterval(quickTimerInterval); quickTimerInterval=null; quickTimerRemaining=0;
+        quickTimerStatus.textContent='✓ Time is up!'; beep(); renderQuickTimer();
+      }
+    },1000);
+  }
+  function pauseQuickTimer(){
+    if(!quickTimerInterval)return;
+    clearInterval(quickTimerInterval); quickTimerInterval=null; quickTimerStatus.textContent='Paused'; renderQuickTimer();
+  }
+  function resetQuickTimer(){
+    pauseQuickTimer(); setQuickTimerFromInputs(); quickTimerStatus.textContent='Reset';
+  }
+  quickTimerMinutes.addEventListener('input',setQuickTimerFromInputs);
+  quickTimerSeconds.addEventListener('input',setQuickTimerFromInputs);
+  document.getElementById('quickTimerStartBtn').addEventListener('click',startQuickTimer);
+  document.getElementById('quickTimerPauseBtn').addEventListener('click',pauseQuickTimer);
+  document.getElementById('quickTimerResetBtn').addEventListener('click',resetQuickTimer);
+  renderQuickTimer();
 
   const toolOutput=document.getElementById('toolOutput');
   document.getElementById('formulaVaultBtn').addEventListener('click',()=>{
