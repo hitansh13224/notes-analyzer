@@ -141,11 +141,13 @@
     display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
     color:var(--cream-soft);margin-bottom:8px;
   }
-  .seg{display:flex;border:1px solid #4E3A26;border-radius:20px;overflow:hidden;}
+  .seg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #4E3A26;border-radius:20px;overflow:hidden;}
   .seg button{
-    flex:1;background:transparent;border:none;color:var(--cream-soft);padding:8px 6px;font-family:'Inter',sans-serif;
-    font-size:12.5px;cursor:pointer;transition:.15s;
+    min-width:0;background:transparent;border:none;color:var(--cream-soft);padding:8px 3px;font-family:'Inter',sans-serif;
+    font-size:12px;white-space:nowrap;cursor:pointer;transition:.15s;
   }
+  .seg[data-three]{grid-template-columns:repeat(3,minmax(0,1fr));}
+  @media(max-width:360px){.seg{grid-template-columns:repeat(2,minmax(0,1fr));border-radius:12px;}.seg button{padding:7px 4px;font-size:11.5px;}}
   .seg button.active{background:var(--amber);color:var(--ink-bg-2);font-weight:600;}
   .count-row{display:flex;align-items:center;gap:12px;}
   input[type=range]{flex:1;accent-color:var(--amber);}
@@ -447,6 +449,32 @@
     margin-bottom:18px;max-width:640px;
   }
 
+  /* ---- extra study views ---- */
+  .feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:24px;}
+  @media(max-width:820px){.feature-grid{grid-template-columns:1fr;}}
+  .feature-card{background:var(--paper);color:var(--ink-text);border-radius:10px;padding:22px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45);}
+  .feature-card h3{font-family:'Fraunces',serif;font-size:20px;margin:0 0 8px;}
+  .feature-card p{font-size:13px;line-height:1.6;color:var(--ink-text-soft);margin:0 0 14px;}
+  .feature-stat{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:10px 12px;border:1px solid var(--paper-line);border-radius:7px;background:var(--paper-2);margin-bottom:8px;}
+  .feature-stat b{color:var(--rule-red);font-size:16px;}
+  .feature-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .tool-btn{border:1px solid #4E3A26;background:transparent;color:var(--cream-soft);border-radius:18px;padding:8px 12px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+  .tool-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .tool-btn.primary{background:var(--amber);color:var(--ink-bg-2);border-color:var(--amber);font-weight:600;}
+  .focus-clock{font-family:'Fraunces',serif;font-size:54px;text-align:center;color:var(--rule-red);margin:8px 0 14px;}
+  .focus-mode{font-family:'IBM Plex Mono',monospace;text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-text-soft);}
+  .focus-progress{height:8px;background:var(--paper-line);border-radius:8px;overflow:hidden;margin:12px 0;}
+  .focus-progress-fill{height:100%;width:0;background:var(--amber-deep);transition:width .25s linear;}
+  .tool-output{margin-top:18px;background:var(--paper);color:var(--ink-text);border-radius:10px;padding:22px;min-height:120px;box-shadow:0 18px 40px -18px rgba(0,0,0,.4);}
+  .tool-output h3{font-family:'Fraunces',serif;margin:0 0 10px;}
+  .tool-output ul{margin:8px 0;padding-left:22px;}
+  .tool-output li{margin:7px 0;line-height:1.5;font-size:13px;}
+  .tool-empty{color:var(--ink-text-soft);font-size:13px;}
+  .progress-big{font-family:'Fraunces',serif;font-size:48px;color:var(--rule-red);}
+  .progress-bar{height:12px;background:var(--paper-line);border-radius:10px;overflow:hidden;margin:8px 0 14px;}
+  .progress-fill{height:100%;width:0;background:var(--sage);transition:width .3s;}
+  .nav-wide{max-width:1040px;margin:0 auto;padding:0 24px;}
+
   /* ---- timetable analyzer ---- */
   .tt-layout{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;margin-top:22px;}
   @media(max-width:820px){.tt-layout{grid-template-columns:1fr;}}
@@ -553,6 +581,9 @@
     </div>
     <nav class="view-nav" aria-label="Sections">
       <button type="button" class="view-nav-btn active" id="navStudyBtn">Study</button>
+      <button type="button" class="view-nav-btn" id="navProgressBtn">Progress</button>
+      <button type="button" class="view-nav-btn" id="navFocusBtn">Focus</button>
+      <button type="button" class="view-nav-btn" id="navToolsBtn">Tools</button>
       <button type="button" class="view-nav-btn" id="navTimetableBtn">Timetable</button>
       <button type="button" class="view-nav-btn" id="navChatBtn">Chat</button>
     </nav>
@@ -605,7 +636,7 @@
         <div class="field">
           <label for="cardCount">Flashcards</label>
           <div class="count-row">
-            <input type="range" id="cardCount" min="6" max="24" step="1" value="12">
+            <input type="range" id="cardCount" min="6" max="25" step="1" value="12">
             <span id="cardCountVal" class="count-val">12</span>
           </div>
         </div>
@@ -721,6 +752,47 @@
       <button id="restartBtn">Start over with new notes</button>
     </div>
   </section>
+  </div>
+
+  <div class="view-page" id="viewProgress">
+    <section class="hero" style="padding-bottom:10px;">
+      <p class="eyebrow">Your study dashboard</p>
+      <h1>See what is <em>sticking</em>.</h1>
+      <p class="lede">Track flashcard mastery, quiz performance, streaks, and your current study session in one place.</p>
+      <div class="feature-grid">
+        <div class="feature-card"><h3>Mastery</h3><div class="progress-big" id="dashMastery">0%</div><div class="progress-bar"><div class="progress-fill" id="dashMasteryFill"></div></div><div class="feature-stat">Known cards: <b id="dashKnown">0</b></div><div class="feature-stat">Weak cards: <b id="dashWeak">0</b></div></div>
+        <div class="feature-card"><h3>Quiz performance</h3><div class="progress-big" id="dashQuiz">—</div><div class="feature-stat">Attempts: <b id="dashAttempts">0</b></div><div class="feature-stat">Best streak: <b id="dashStreak">0</b></div><div class="feature-actions"><button class="tool-btn primary" id="dashQuizBtn">Open quiz</button></div></div>
+        <div class="feature-card"><h3>Study session</h3><div class="feature-stat">Current session: <b id="dashSession">0:00</b></div><div class="feature-stat">Cards in deck: <b id="dashCards">0</b></div><div class="feature-actions"><button class="tool-btn" id="dashStudyBtn">Back to study</button></div></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="view-page" id="viewFocus">
+    <section class="hero" style="padding-bottom:10px;">
+      <p class="eyebrow">Focus mode</p>
+      <h1>Study in <em>clean sprints</em>.</h1>
+      <p class="lede">A distraction-free study timer with 25-minute focus sessions and 5-minute breaks.</p>
+      <div class="feature-card" style="max-width:620px;margin:24px auto 0;">
+        <div class="focus-mode" id="focusModeLabel">Focus session</div>
+        <div class="focus-clock" id="focusClock">25:00</div>
+        <div class="focus-progress"><div class="focus-progress-fill" id="focusProgressFill"></div></div>
+        <div class="feature-actions" style="justify-content:center;"><button class="tool-btn primary" id="focusStartBtn">▶ Start</button><button class="tool-btn" id="focusPauseBtn">Ⅱ Pause</button><button class="tool-btn" id="focusResetBtn">↺ Reset</button></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="view-page" id="viewTools">
+    <section class="hero" style="padding-bottom:10px;">
+      <p class="eyebrow">Study tools</p>
+      <h1>More than just <em>notes</em>.</h1>
+      <p class="lede">Turn your generated study pack into a formula sheet, mistake book, and quick revision checklist.</p>
+      <div class="feature-grid">
+        <div class="feature-card"><h3>∑ Formula Vault</h3><p>Pull every formula or equation detected in your generated summary into one clean revision sheet.</p><button class="tool-btn primary" id="formulaVaultBtn">Show formulas</button></div>
+        <div class="feature-card"><h3>✕ Mistake Book</h3><p>Collect questions you missed in the quiz so you can review the exact concepts that need another look.</p><button class="tool-btn primary" id="mistakeBookBtn">Show mistakes</button></div>
+        <div class="feature-card"><h3>✓ Quick Revision</h3><p>Generate a compact checklist from your summary for a final 5-minute review before a test.</p><button class="tool-btn primary" id="revisionBtn">Build checklist</button></div>
+      </div>
+      <div class="tool-output" id="toolOutput"><div class="tool-empty">Choose a tool above after generating your study pack.</div></div>
+    </section>
   </div>
 
   <div class="view-page" id="viewTimetable">
@@ -1382,6 +1454,7 @@ let clean = text.trim();
   let missed = [];
   let missedFull = [];
   let quizAttempts = [];
+  let lastQuizQuestions = [];
   let currentStreak = 0;
   let bestStreak = 0;
   let questionTimer = null;
@@ -1877,24 +1950,111 @@ jsonMode: true
 
   // ---------- Top-level view nav (Study / Timetable / Chat) ----------
   const navStudyBtn = document.getElementById('navStudyBtn');
+  const navProgressBtn = document.getElementById('navProgressBtn');
+  const navFocusBtn = document.getElementById('navFocusBtn');
+  const navToolsBtn = document.getElementById('navToolsBtn');
   const navTimetableBtn = document.getElementById('navTimetableBtn');
   const navChatBtn = document.getElementById('navChatBtn');
   const viewStudy = document.getElementById('viewStudy');
+  const viewProgress = document.getElementById('viewProgress');
+  const viewFocus = document.getElementById('viewFocus');
+  const viewTools = document.getElementById('viewTools');
   const viewTimetable = document.getElementById('viewTimetable');
   const viewChat = document.getElementById('viewChat');
 
   function activateView(which){
-    const map = {study: viewStudy, timetable: viewTimetable, chat: viewChat};
-    const btnMap = {study: navStudyBtn, timetable: navTimetableBtn, chat: navChatBtn};
+    const map = {study:viewStudy, progress:viewProgress, focus:viewFocus, tools:viewTools, timetable:viewTimetable, chat:viewChat};
+    const btnMap = {study:navStudyBtn, progress:navProgressBtn, focus:navFocusBtn, tools:navToolsBtn, timetable:navTimetableBtn, chat:navChatBtn};
     Object.keys(map).forEach(key=>{
       const on = key === which;
       map[key].classList.toggle('active', on);
       btnMap[key].classList.toggle('active', on);
     });
+    if(which === 'progress') updateDashboard();
   }
   navStudyBtn.addEventListener('click', ()=>activateView('study'));
+  navProgressBtn.addEventListener('click', ()=>activateView('progress'));
+  navFocusBtn.addEventListener('click', ()=>activateView('focus'));
+  navToolsBtn.addEventListener('click', ()=>activateView('tools'));
   navTimetableBtn.addEventListener('click', ()=>activateView('timetable'));
   navChatBtn.addEventListener('click', ()=>activateView('chat'));
+
+  // ---------- Progress dashboard + study tools ----------
+  const dashMastery = document.getElementById('dashMastery');
+  const dashMasteryFill = document.getElementById('dashMasteryFill');
+  const dashKnown = document.getElementById('dashKnown');
+  const dashWeak = document.getElementById('dashWeak');
+  const dashQuiz = document.getElementById('dashQuiz');
+  const dashAttempts = document.getElementById('dashAttempts');
+  const dashStreak = document.getElementById('dashStreak');
+  const dashSession = document.getElementById('dashSession');
+  const dashCards = document.getElementById('dashCards');
+
+  function updateDashboard(){
+    const total = deck.length || 0;
+    const knownCountNow = total ? Array.from(known).filter(id=>known.has(id)).length : 0;
+    const weakCount = total ? total - knownCountNow : 0;
+    const cardPct = total ? Math.round((knownCountNow/total)*100) : 0;
+    const bestQuiz = quizAttempts.length ? Math.max(...quizAttempts) : null;
+    const overall = bestQuiz === null ? cardPct : Math.round((cardPct + bestQuiz)/2);
+    dashMastery.textContent = overall + '%';
+    dashMasteryFill.style.width = overall + '%';
+    dashKnown.textContent = knownCountNow;
+    dashWeak.textContent = weakCount;
+    dashQuiz.textContent = bestQuiz === null ? '—' : bestQuiz + '%';
+    dashAttempts.textContent = quizAttempts.length;
+    dashStreak.textContent = bestStreak;
+    dashCards.textContent = total;
+    const m=Math.floor(sessionSeconds/60), sec=sessionSeconds%60;
+    dashSession.textContent=m+':'+String(sec).padStart(2,'0');
+  }
+  setInterval(()=>{ if(viewProgress.classList.contains('active')) updateDashboard(); },1000);
+  document.getElementById('dashQuizBtn').addEventListener('click',()=>{ activateView('study'); document.getElementById('tabQuizBtn').click(); });
+  document.getElementById('dashStudyBtn').addEventListener('click',()=>activateView('study'));
+
+  // Focus timer
+  const focusClock=document.getElementById('focusClock');
+  const focusModeLabel=document.getElementById('focusModeLabel');
+  const focusProgressFill=document.getElementById('focusProgressFill');
+  let focusSeconds=25*60, focusTotal=25*60, focusInterval=null, focusBreak=false;
+  function renderFocus(){
+    const m=Math.floor(focusSeconds/60), sec=focusSeconds%60;
+    focusClock.textContent=m+':'+String(sec).padStart(2,'0');
+    focusModeLabel.textContent=focusBreak?'Break time':'Focus session';
+    focusProgressFill.style.width=Math.max(0,Math.min(100,((focusTotal-focusSeconds)/focusTotal)*100))+'%';
+  }
+  function switchFocusMode(){
+    focusBreak=!focusBreak; focusTotal=(focusBreak?5:25)*60; focusSeconds=focusTotal; renderFocus();
+  }
+  document.getElementById('focusStartBtn').addEventListener('click',()=>{
+    if(focusInterval) return;
+    focusInterval=setInterval(()=>{
+      focusSeconds--; renderFocus();
+      if(focusSeconds<=0){ clearInterval(focusInterval); focusInterval=null; switchFocusMode(); }
+    },1000);
+  });
+  document.getElementById('focusPauseBtn').addEventListener('click',()=>{ if(focusInterval){clearInterval(focusInterval);focusInterval=null;} });
+  document.getElementById('focusResetBtn').addEventListener('click',()=>{ if(focusInterval){clearInterval(focusInterval);focusInterval=null;} focusBreak=false;focusTotal=25*60;focusSeconds=focusTotal;renderFocus(); });
+  renderFocus();
+
+  const toolOutput=document.getElementById('toolOutput');
+  document.getElementById('formulaVaultBtn').addEventListener('click',()=>{
+    const text=lastSummaryMd||'';
+    const lines=text.split('\n').map(x=>x.trim()).filter(x=>x);
+    const formulaLines=lines.filter(x=>/formula|equation|\bTSA\b|\bCSA\b|\bLSA\b|=|²|³|√|π|\barea\b|\bvolume\b/i.test(x));
+    toolOutput.innerHTML='<h3>∑ Formula Vault</h3>'+(formulaLines.length?'<ul>'+formulaLines.map(x=>'<li>'+escapeHtml(x.replace(/^[-*#]+\s*/,''))+'</li>').join('')+'</ul>':'<div class="tool-empty">No formulas were detected in the generated summary.</div>');
+  });
+  document.getElementById('mistakeBookBtn').addEventListener('click',()=>{
+    const missed=[];
+    quizAttempts.length;
+    if(missedFull && missedFull.length){ missed.push(...missedFull); }
+    toolOutput.innerHTML='<h3>✕ Mistake Book</h3>'+(missed.length?'<ul>'+missed.map(q=>'<li><b>'+escapeHtml(q.question)+'</b><br>Answer: '+escapeHtml(q.options[q.correctIndex]||'')+'</li>').join('')+'</ul>':'<div class="tool-empty">No recorded mistakes yet. Take the quiz and your missed questions will appear here.</div>');
+  });
+  document.getElementById('revisionBtn').addEventListener('click',()=>{
+    const text=lastSummaryMd||'';
+    const bullets=text.split('\n').map(x=>x.trim()).filter(x=>/^[-*]\s+/.test(x)).slice(0,12);
+    toolOutput.innerHTML='<h3>✓ 5-Minute Revision Checklist</h3>'+(bullets.length?'<ul>'+bullets.map(x=>'<li>☐ '+escapeHtml(x.replace(/^[-*]\s+/,''))+'</li>').join('')+'</ul>':'<div class="tool-empty">Generate a study pack first to build a checklist.</div>');
+  });
 
   // ---------- Groq (used by Timetable analyzer + Chat) ----------
   // The actual Groq API key lives server-side (in app.py, via the GROQ_API_KEY env var).
