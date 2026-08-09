@@ -974,13 +974,19 @@
         throw new Error('The request failed (status ' + response.status + ').');
       }
 
-      const data = await response.json();
-      const textBlock = (data.content || []).find(b => b.type === 'text');
-      if(!textBlock){
-        throw new Error('No response came back. Try again.');
-      }
+     const data = await response.json();
 
-      let clean = textBlock.text.trim();
+if (!response.ok) {
+  throw new Error(data.error?.message || 'The request failed.');
+}
+
+const text = data.choices?.[0]?.message?.content;
+
+if (!text) {
+  throw new Error('No response came back from Groq. Try again.');
+}
+
+let clean = text.trim();
       clean = clean.replace(/^```json\s*/i, '').replace(/^```\s*/,'').replace(/```\s*$/,'');
 
       let parsed;
