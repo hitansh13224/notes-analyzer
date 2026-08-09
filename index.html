@@ -474,6 +474,31 @@
   .progress-bar{height:12px;background:var(--paper-line);border-radius:10px;overflow:hidden;margin:8px 0 14px;}
   .progress-fill{height:100%;width:0;background:var(--sage);transition:width .3s;}
   .nav-wide{max-width:1040px;margin:0 auto;padding:0 24px;}
+  .focus-shell{max-width:900px;margin:24px auto 0;}
+  .focus-top-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:stretch;}
+  @media(max-width:820px){.focus-top-grid{grid-template-columns:1fr;}}
+  .focus-panel{background:var(--paper);color:var(--ink-text);border-radius:10px;padding:22px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45);}
+  .focus-task{width:100%;border:1px solid var(--paper-line);background:var(--paper-2);color:var(--ink-text);border-radius:7px;padding:11px 12px;font:500 13px 'Inter',sans-serif;margin:12px 0;}
+  .focus-presets{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 14px;}
+  .focus-preset{border:1px solid var(--paper-line);background:transparent;color:var(--ink-text);border-radius:16px;padding:7px 10px;cursor:pointer;font:500 11px 'IBM Plex Mono',monospace;}
+  .focus-preset.active,.focus-preset:hover{background:var(--amber);border-color:var(--amber);color:var(--ink-bg-2);}
+  .focus-settings{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px;}
+  .focus-setting{border:1px solid var(--paper-line);border-radius:8px;padding:10px;background:var(--paper-2);font-size:12px;}
+  .focus-setting label{display:flex;align-items:center;gap:7px;cursor:pointer;line-height:1.35;}
+  .focus-setting input[type=number]{width:64px;border:1px solid var(--paper-line);background:var(--paper);color:var(--ink-text);border-radius:5px;padding:5px;}
+  .focus-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px;}
+  .focus-mini{border:1px solid var(--paper-line);border-radius:8px;padding:10px;text-align:center;background:var(--paper-2);}
+  .focus-mini b{display:block;font:600 20px 'Fraunces',serif;color:var(--rule-red);}
+  .focus-mini span{font:10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-text-soft);}
+  .focus-history{margin-top:16px;}
+  .focus-history-item{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--paper-line);padding:9px 0;font-size:12px;}
+  .focus-history-item:last-child{border-bottom:0;}
+  .focus-goal{margin-top:14px;}
+  .focus-goal-track{height:9px;background:var(--paper-line);border-radius:8px;overflow:hidden;margin:7px 0;}
+  .focus-goal-fill{height:100%;width:0;background:var(--sage);transition:width .25s;}
+  .focus-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+  .focus-status{font:11px 'IBM Plex Mono',monospace;text-align:center;color:var(--ink-text-soft);min-height:17px;margin-top:8px;}
+
 
   /* ---- timetable analyzer ---- */
   .tt-layout{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;margin-top:22px;}
@@ -778,12 +803,46 @@
     <section class="hero" style="padding-bottom:10px;">
       <p class="eyebrow">Focus mode</p>
       <h1>Study in <em>clean sprints</em>.</h1>
-      <p class="lede">A distraction-free study timer with 25-minute focus sessions and 5-minute breaks.</p>
-      <div class="feature-card" style="max-width:620px;margin:24px auto 0;">
-        <div class="focus-mode" id="focusModeLabel">Focus session</div>
-        <div class="focus-clock" id="focusClock">25:00</div>
-        <div class="focus-progress"><div class="focus-progress-fill" id="focusProgressFill"></div></div>
-        <div class="feature-actions" style="justify-content:center;"><button class="tool-btn primary" id="focusStartBtn">▶ Start</button><button class="tool-btn" id="focusPauseBtn">Ⅱ Pause</button><button class="tool-btn" id="focusResetBtn">↺ Reset</button></div>
+      <p class="lede">A smarter focus room with custom sessions, goals, streaks, auto-breaks, sounds, and session history.</p>
+      <div class="focus-shell">
+        <div class="focus-top-grid">
+          <div class="focus-panel">
+            <input class="focus-task" id="focusTaskInput" placeholder="What are you focusing on? e.g. Maths — Mensuration" maxlength="100">
+            <div class="focus-presets" aria-label="Focus presets">
+              <button class="focus-preset active" data-focus-preset="25,5">25 / 5</button>
+              <button class="focus-preset" data-focus-preset="50,10">50 / 10</button>
+              <button class="focus-preset" data-focus-preset="90,20">90 / 20</button>
+              <button class="focus-preset" data-focus-preset="custom">Custom</button>
+            </div>
+            <div class="focus-mode" id="focusModeLabel">Focus session</div>
+            <div class="focus-clock" id="focusClock">25:00</div>
+            <div class="focus-progress"><div class="focus-progress-fill" id="focusProgressFill"></div></div>
+            <div class="focus-status" id="focusStatus">Ready when you are.</div>
+            <div class="focus-actions"><button class="tool-btn primary" id="focusStartBtn">▶ Start</button><button class="tool-btn" id="focusPauseBtn">Ⅱ Pause</button><button class="tool-btn" id="focusResetBtn">↺ Reset</button><button class="tool-btn" id="focusSkipBtn">⏭ Skip</button><button class="tool-btn" id="focusFullscreenBtn">⛶ Fullscreen</button></div>
+            <div class="focus-settings">
+              <div class="focus-setting"><label><input type="checkbox" id="focusAutoBreak" checked> Auto-start break</label></div>
+              <div class="focus-setting"><label><input type="checkbox" id="focusAutoFocus"> Auto-start next focus</label></div>
+              <div class="focus-setting"><label><input type="checkbox" id="focusSound" checked> Completion sound</label></div>
+              <div class="focus-setting"><label>Daily goal <input type="number" id="focusGoalInput" min="15" max="240" step="15" value="60"> min</label></div>
+            </div>
+          </div>
+          <div class="focus-panel">
+            <h3 style="font-family:'Fraunces',serif;margin:0 0 8px;font-size:22px;">Today’s focus</h3>
+            <div class="focus-mini-grid">
+              <div class="focus-mini"><b id="focusSessionsToday">0</b><span>sessions</span></div>
+              <div class="focus-mini"><b id="focusMinutesToday">0</b><span>minutes</span></div>
+              <div class="focus-mini"><b id="focusStreak">0</b><span>streak</span></div>
+            </div>
+            <div class="focus-goal">
+              <div style="display:flex;justify-content:space-between;font-size:12px;"><span>Daily goal</span><b id="focusGoalText">0 / 60 min</b></div>
+              <div class="focus-goal-track"><div class="focus-goal-fill" id="focusGoalFill"></div></div>
+            </div>
+            <div class="focus-history">
+              <h4 style="margin:16px 0 4px;font-family:'Fraunces',serif;font-size:17px;">Recent sessions</h4>
+              <div id="focusHistory"><div class="tool-empty">No completed sessions yet.</div></div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -2026,30 +2085,91 @@ jsonMode: true
   document.getElementById('dashQuizBtn').addEventListener('click',()=>{ activateView('study'); document.getElementById('tabQuizBtn').click(); });
   document.getElementById('dashStudyBtn').addEventListener('click',()=>activateView('study'));
 
-  // Focus timer
+  // Focus timer + session tracking
   const focusClock=document.getElementById('focusClock');
   const focusModeLabel=document.getElementById('focusModeLabel');
   const focusProgressFill=document.getElementById('focusProgressFill');
-  let focusSeconds=25*60, focusTotal=25*60, focusInterval=null, focusBreak=false;
+  const focusStatus=document.getElementById('focusStatus');
+  const focusTaskInput=document.getElementById('focusTaskInput');
+  const focusGoalInput=document.getElementById('focusGoalInput');
+  const focusGoalText=document.getElementById('focusGoalText');
+  const focusGoalFill=document.getElementById('focusGoalFill');
+  const focusHistory=document.getElementById('focusHistory');
+  const focusSessionsToday=document.getElementById('focusSessionsToday');
+  const focusMinutesToday=document.getElementById('focusMinutesToday');
+  const focusStreak=document.getElementById('focusStreak');
+  let focusMinutes=25, breakMinutes=5, focusSeconds=25*60, focusTotal=25*60, focusInterval=null, focusBreak=false, focusStartedAt=null;
+  let focusSessions=JSON.parse(localStorage.getItem('study_focus_sessions')||'[]');
+
+  function focusToday(){ const d=new Date().toISOString().slice(0,10); return focusSessions.filter(x=>x.date===d); }
+  function focusStats(){
+    const today=focusToday();
+    const mins=today.reduce((a,x)=>a+(x.minutes||0),0);
+    let streak=0, cursor=new Date();
+    while(true){
+      const key=cursor.toISOString().slice(0,10);
+      if(!focusSessions.some(x=>x.date===key)) break;
+      streak++; cursor.setDate(cursor.getDate()-1);
+    }
+    focusSessionsToday.textContent=today.length; focusMinutesToday.textContent=mins; focusStreak.textContent=streak;
+    const goal=Math.max(15,Number(focusGoalInput.value)||60);
+    focusGoalText.textContent=mins+' / '+goal+' min'; focusGoalFill.style.width=Math.min(100,(mins/goal)*100)+'%';
+    if(today.length>=1 && mins>=goal) focusStatus.textContent='🔥 Daily goal complete — nice work!';
+  }
+  function renderFocusHistory(){
+    if(!focusSessions.length){ focusHistory.innerHTML='<div class="tool-empty">No completed sessions yet.</div>'; return; }
+    focusHistory.innerHTML=focusSessions.slice(-6).reverse().map(x=>'<div class="focus-history-item"><span>'+escapeHtml(x.task||'Study session')+'</span><b>'+x.minutes+' min</b></div>').join('');
+  }
   function renderFocus(){
     const m=Math.floor(focusSeconds/60), sec=focusSeconds%60;
     focusClock.textContent=m+':'+String(sec).padStart(2,'0');
     focusModeLabel.textContent=focusBreak?'Break time':'Focus session';
     focusProgressFill.style.width=Math.max(0,Math.min(100,((focusTotal-focusSeconds)/focusTotal)*100))+'%';
+    document.title=(focusInterval?'▶ ':'')+(focusBreak?'Break ':'Focus ')+focusClock.textContent+' — Index';
   }
-  function switchFocusMode(){
-    focusBreak=!focusBreak; focusTotal=(focusBreak?5:25)*60; focusSeconds=focusTotal; renderFocus();
+  function beep(){
+    if(!document.getElementById('focusSound').checked) return;
+    try{ const C=window.AudioContext||window.webkitAudioContext; if(!C)return; const c=new C(),o=c.createOscillator(),g=c.createGain(); o.frequency.value=660; g.gain.value=.06; o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.18); }catch(e){}
   }
-  document.getElementById('focusStartBtn').addEventListener('click',()=>{
-    if(focusInterval) return;
+  function saveFocusSession(){
+    const minutes=focusMinutes;
+    focusSessions.push({date:new Date().toISOString().slice(0,10),minutes,task:focusTaskInput.value.trim()||'Study session',time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+    focusSessions=focusSessions.slice(-50); localStorage.setItem('study_focus_sessions',JSON.stringify(focusSessions)); focusStats(); renderFocusHistory();
+  }
+  function finishPhase(){
+    if(!focusBreak){
+      saveFocusSession(); beep();
+      focusStatus.textContent='✓ Focus session complete!';
+    } else { beep(); focusStatus.textContent='Break complete — ready for another sprint.'; }
+    focusBreak=!focusBreak; focusTotal=(focusBreak?breakMinutes:focusMinutes)*60; focusSeconds=focusTotal; renderFocus();
+    const shouldAuto=focusBreak ? document.getElementById('focusAutoBreak').checked : document.getElementById('focusAutoFocus').checked;
+    if(shouldAuto){ setTimeout(()=>{ if(!focusInterval) startFocusTimer(); },350); }
+  }
+  function startFocusTimer(){
+    if(focusInterval)return;
+    focusStartedAt=Date.now(); focusStatus.textContent=focusBreak?'Break running…':'Focus running — stay with it.';
     focusInterval=setInterval(()=>{
       focusSeconds--; renderFocus();
-      if(focusSeconds<=0){ clearInterval(focusInterval); focusInterval=null; switchFocusMode(); }
+      if(focusSeconds<=0){clearInterval(focusInterval);focusInterval=null;finishPhase();}
     },1000);
-  });
-  document.getElementById('focusPauseBtn').addEventListener('click',()=>{ if(focusInterval){clearInterval(focusInterval);focusInterval=null;} });
-  document.getElementById('focusResetBtn').addEventListener('click',()=>{ if(focusInterval){clearInterval(focusInterval);focusInterval=null;} focusBreak=false;focusTotal=25*60;focusSeconds=focusTotal;renderFocus(); });
-  renderFocus();
+  }
+  function stopFocusTimer(){ if(focusInterval){clearInterval(focusInterval);focusInterval=null;} renderFocus(); }
+  function setFocusPreset(f,b){ stopFocusTimer(); focusMinutes=f; breakMinutes=b; focusBreak=false; focusTotal=f*60; focusSeconds=focusTotal; document.querySelectorAll('.focus-preset').forEach(x=>x.classList.remove('active')); renderFocus(); focusStatus.textContent=f+' min focus / '+b+' min break selected.'; }
+  document.querySelectorAll('.focus-preset').forEach(btn=>btn.addEventListener('click',()=>{
+    const val=btn.dataset.focusPreset;
+    if(val==='custom'){
+      const f=Math.min(180,Math.max(5,Number(prompt('Focus minutes?',focusMinutes))||focusMinutes));
+      const b=Math.min(60,Math.max(1,Number(prompt('Break minutes?',breakMinutes))||breakMinutes));
+      setFocusPreset(f,b); btn.classList.add('active');
+    } else { const [f,b]=val.split(',').map(Number); setFocusPreset(f,b); btn.classList.add('active'); }
+  }));
+  document.getElementById('focusStartBtn').addEventListener('click',startFocusTimer);
+  document.getElementById('focusPauseBtn').addEventListener('click',()=>{ if(focusInterval){stopFocusTimer();focusStatus.textContent='Paused — take a breath, then resume.';} });
+  document.getElementById('focusResetBtn').addEventListener('click',()=>{stopFocusTimer();focusBreak=false;focusTotal=focusMinutes*60;focusSeconds=focusTotal;focusStatus.textContent='Timer reset.';renderFocus();});
+  document.getElementById('focusSkipBtn').addEventListener('click',()=>{stopFocusTimer();focusBreak=!focusBreak;focusTotal=(focusBreak?breakMinutes:focusMinutes)*60;focusSeconds=focusTotal;focusStatus.textContent=focusBreak?'Skipped to break.':'Skipped to the next focus sprint.';renderFocus();});
+  document.getElementById('focusGoalInput').addEventListener('change',focusStats);
+  document.getElementById('focusFullscreenBtn').addEventListener('click',async()=>{ try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); }catch(e){ focusStatus.textContent='Fullscreen is not available in this browser.'; } });
+  focusStats(); renderFocusHistory(); renderFocus();
 
   const toolOutput=document.getElementById('toolOutput');
   document.getElementById('formulaVaultBtn').addEventListener('click',()=>{
