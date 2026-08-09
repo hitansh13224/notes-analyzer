@@ -836,6 +836,12 @@
                 <span>sec</span>
               </div>
               <div class="focus-actions">
+                <button class="tool-btn" id="quickTimerBack10Btn">↶ 10s</button>
+                <button class="tool-btn" id="quickTimerForward10Btn">↷ 10s</button>
+                <button class="tool-btn" id="quickTimerBack1mBtn">↶ 1m</button>
+                <button class="tool-btn" id="quickTimerForward1mBtn">↷ 1m</button>
+              </div>
+              <div class="focus-actions">
                 <button class="tool-btn primary" id="quickTimerStartBtn">▶ Start Timer</button>
                 <button class="tool-btn" id="quickTimerPauseBtn">Ⅱ Pause</button>
                 <button class="tool-btn" id="quickTimerResetBtn">↺ Reset</button>
@@ -2232,11 +2238,24 @@ jsonMode: true
   function resetQuickTimer(){
     pauseQuickTimer(); setQuickTimerFromInputs(); quickTimerStatus.textContent='Reset';
   }
+  function adjustQuickTimer(delta){
+    quickTimerRemaining=Math.max(0,Math.min(180*60,quickTimerRemaining+delta));
+    if(quickTimerRemaining>0){
+      quickTimerStatus.textContent=quickTimerInterval?'Running':'Ready';
+    } else {
+      quickTimerStatus.textContent='Set a time';
+    }
+    renderQuickTimer();
+  }
   quickTimerMinutes.addEventListener('input',setQuickTimerFromInputs);
   quickTimerSeconds.addEventListener('input',setQuickTimerFromInputs);
   document.getElementById('quickTimerStartBtn').addEventListener('click',startQuickTimer);
   document.getElementById('quickTimerPauseBtn').addEventListener('click',pauseQuickTimer);
   document.getElementById('quickTimerResetBtn').addEventListener('click',resetQuickTimer);
+  document.getElementById('quickTimerBack10Btn').addEventListener('click',()=>adjustQuickTimer(-10));
+  document.getElementById('quickTimerForward10Btn').addEventListener('click',()=>adjustQuickTimer(10));
+  document.getElementById('quickTimerBack1mBtn').addEventListener('click',()=>adjustQuickTimer(-60));
+  document.getElementById('quickTimerForward1mBtn').addEventListener('click',()=>adjustQuickTimer(60));
   renderQuickTimer();
 
   const toolOutput=document.getElementById('toolOutput');
